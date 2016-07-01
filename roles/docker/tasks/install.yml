@@ -1,0 +1,70 @@
+- name: Install CA certificates
+  apt:
+    name: "{{item}}"
+    state: present
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+
+- name: Get APT GPG key
+  apt_key:
+    id: "{{ apt_key_id }}"
+    keyserver: "{{ apt_key_keyserver }}"
+    state: present
+  register: add_gpg_key
+  ignore_errors: true
+
+- name: Alternative | Add Docker repository key
+  shell: "curl -sSL {{ apt_key_url }} | sudo apt-key add -"
+  when: add_gpg_key|failed
+
+- name: Add docker repository to APT and update apt cache
+  apt_repository:
+    repo: "{{ apt_repo }}"
+    state: present
+    update_cache: yes
+
+- name: Install required packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    #install_recommends: no
+  with_items:
+    - python-setuptools
+    - python-dev
+    - docker-engine
+    - aufs-tools
+
+- name: Install pip with easy_install
+  shell: "easy_install pip"
+
+- name: Install python packages
+  pip:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    #- pip
+    #- setuptools
+    - docker-py
+    - docker-compose
+
+- name: Configure docker options
+  template:
+    src: docker.j2
+    dest: /etc/default/docker
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Add users to docker group
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: yes
+  with_items: "{{ docker_group_members }}"
+  when: docker_group_members is defined
+
+- name: Restart docker service 
+  service:
+    name: docker
+    state: restarted

@@ -1,0 +1,6 @@
+---
+apt_key_id: "58118E89F3A912897C070ADBF76221572C52609D"
+apt_key_keyserver: "hkp://p80.pool.sks-keyservers.net:80"
+apt_key_url: "https://apt.dockerproject.org/gpg"
+apt_repo: "deb https://apt.dockerproject.org/repo ubuntu-trusty main"
+docker_group_members: []
