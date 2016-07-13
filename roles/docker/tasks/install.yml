@@ -67,6 +67,7 @@
   with_items:
     - docker-py
     - docker-compose
+    - wheel
 
 - name: Configure docker options
   template:
